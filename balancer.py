@@ -22,16 +22,20 @@ BACKEND_URLS = [
     'https://aixflymasterrouter-earn-desk-node-04.hf.space',
     'https://aixflymasterrouter-earn-desk-node-05.hf.space',
     'https://aixflymasterrouter-earn-desk-node-06.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-07.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-08.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-09.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-10.hf.space',
 ]
 
 
 # YOUR HUGGING FACE TOKENS (For Multiple Accounts)
 # Format: "username": "token"
 TOKENS = {
-    "aixflyMasterRouter": "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",
-    "secondAccount": "PASTE_TOKEN_2_HERE",
+    "aixflyMasterRouter": "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",
     # Add more accounts and tokens as needed
 }
+
 
 
 
@@ -217,11 +221,15 @@ async def balance_transcribe(file: UploadFile = File(...)):
 
                 
                 # Headers for private space access
-                headers = {"Authorization": f"Bearer {target_token}"}
+                headers = {
+                    "Authorization": f"Bearer {target_token}",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
                 
                 # Short timeout for "instant" feel - if one space is slow, move to next
-                async with httpx.AsyncClient(timeout=10.0) as client:
+                async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
                     response = await client.post(f"{backend_url}/transcribe", files=files, headers=headers)
+
 
                     
                     if response.status_code == 200:
