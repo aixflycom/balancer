@@ -216,11 +216,6 @@ async def balance_transcribe(file: UploadFile = File(...)):
                     print(f"Error: No token found for {backend_url}")
                     continue 
 
-                # CONVERT TO OFFICIAL PROXY URL
-                # Extract space name: earn-desk-node-01
-                space_name = backend_url.split('/')[-1].replace(f"{target_username.lower()}-", "").replace(".hf.space", "")
-                proxy_url = f"https://huggingface.co/api/spaces/{target_username}/{space_name}/proxy/transcribe"
-                
                 # Headers for private space access
                 headers = {
                     "Authorization": f"Bearer {target_token}",
@@ -229,17 +224,17 @@ async def balance_transcribe(file: UploadFile = File(...)):
                 
                 # Short timeout for "instant" feel
                 async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
-                    print(f"Forwarding to Proxy: {proxy_url}")
-                    response = await client.post(proxy_url, files=files, headers=headers)
-
-
-
+                    target_url = f"{backend_url}/transcribe"
+                    print(f"Forwarding to: {target_url}")
+                    response = await client.post(target_url, files=files, headers=headers)
                     
                     if response.status_code == 200:
+
 
                         stats["active_requests"] -= 1
                         return response.json()
                     
+                    print(f"HF Proxy Error [{response.status_code}]: {response.text[:100]}")
                     print(f"Backend {backend_url} returned {response.status_code}. Retrying...")
             except Exception as e:
                 print(f"Backend {backend_url} error: {str(e)}. Retrying...")
