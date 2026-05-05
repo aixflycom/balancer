@@ -21,11 +21,7 @@ BACKEND_URLS = [
     'https://aixflymasterrouter-earn-desk-node-03.hf.space',
     'https://aixflymasterrouter-earn-desk-node-04.hf.space',
     'https://aixflymasterrouter-earn-desk-node-05.hf.space',
-    'https://aixflymasterrouter-earn-desk-node-06.hf.space',
-    'https://aixflymasterrouter-earn-desk-node-07.hf.space',
-    'https://aixflymasterrouter-earn-desk-node-08.hf.space',
-    'https://aixflymasterrouter-earn-desk-node-09.hf.space',
-    'https://aixflymasterrouter-earn-desk-node-10.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-06.hf.space'
 ]
 
 
@@ -207,18 +203,23 @@ async def balance_transcribe(file: UploadFile = File(...)):
                 
                 # Automatically pick the correct token based on the username in the URL
                 target_token = None
+                target_username = None
                 lower_url = backend_url.lower()
                 for username, token in TOKENS.items():
                     u_lower = username.lower()
                     if f"/{u_lower}-" in lower_url or f"//{u_lower}-" in lower_url:
                         target_token = token
+                        target_username = username
                         break
                 
                 if not target_token:
                     print(f"Error: No token found for {backend_url}")
-                    continue # Try next backend
+                    continue 
 
-
+                # CONVERT TO OFFICIAL PROXY URL
+                # Extract space name: earn-desk-node-01
+                space_name = backend_url.split('/')[-1].replace(f"{target_username.lower()}-", "").replace(".hf.space", "")
+                proxy_url = f"https://huggingface.co/api/spaces/{target_username}/{space_name}/proxy/transcribe"
                 
                 # Headers for private space access
                 headers = {
@@ -226,9 +227,11 @@ async def balance_transcribe(file: UploadFile = File(...)):
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 }
                 
-                # Short timeout for "instant" feel - if one space is slow, move to next
-                async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-                    response = await client.post(f"{backend_url}/transcribe", files=files, headers=headers)
+                # Short timeout for "instant" feel
+                async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+                    print(f"Forwarding to Proxy: {proxy_url}")
+                    response = await client.post(proxy_url, files=files, headers=headers)
+
 
 
                     
