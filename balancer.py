@@ -16,16 +16,14 @@ stats = {
 
 # LIST OF YOUR HUGGING FACE SPACE URLS
 BACKEND_URLS = [
-'https://aixflyMasterRouter-earn-desk-node-01.hf.space',
-'https://aixflyMasterRouter-earn-desk-node-02.hf.space',
-'https://aixflyMasterRouter-earn-desk-node-03.hf.space',
-'https://aixflyMasterRouter-earn-desk-node-04.hf.space',
-'https://aixflyMasterRouter-earn-desk-node-05.hf.space',
-'https://aixflyMasterRouter-earn-desk-node-06.hf.space',
-
-
-
+    'https://aixflymasterrouter-earn-desk-node-01.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-02.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-03.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-04.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-05.hf.space',
+    'https://aixflymasterrouter-earn-desk-node-06.hf.space',
 ]
+
 
 # YOUR HUGGING FACE TOKENS (For Multiple Accounts)
 # Format: "username": "token"
@@ -35,8 +33,6 @@ TOKENS = {
     # Add more accounts and tokens as needed
 }
 
-# Default token if username is not in the list above
-DEFAULT_TOKEN = "PASTE_DEFAULT_TOKEN_HERE"
 
 
 
@@ -206,12 +202,19 @@ async def balance_transcribe(file: UploadFile = File(...)):
                 files = {'file': (file.filename, file_content, file.content_type)}
                 
                 # Automatically pick the correct token based on the username in the URL
-                # Example: https://username-space.hf.space -> extract 'username'
-                target_token = DEFAULT_TOKEN
+                target_token = None
+                lower_url = backend_url.lower()
                 for username, token in TOKENS.items():
-                    if f"/{username}-" in backend_url or f"//{username}-" in backend_url:
+                    u_lower = username.lower()
+                    if f"/{u_lower}-" in lower_url or f"//{u_lower}-" in lower_url:
                         target_token = token
                         break
+                
+                if not target_token:
+                    print(f"Error: No token found for {backend_url}")
+                    continue # Try next backend
+
+
                 
                 # Headers for private space access
                 headers = {"Authorization": f"Bearer {target_token}"}
